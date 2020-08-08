@@ -7,7 +7,6 @@
 #include "Flow.h"
 #include "Pump.h"
 
-
 // tolerances for begin/end pumping
 #define PUMP_BEGIN_TOLERANCE 1
 #define PUMP_END_TOLERANCE 0
@@ -15,8 +14,6 @@
 // consume status transitions thresholds
 #define CONSUME_FROM_TOP  40
 #define CONSUME_FROM_PIPE 35
-
-#define GO_IN_PREHEAT_THRES 40
 
 // device configuration
 const int disp  = 2;
@@ -26,7 +23,6 @@ const int pinV1 = 5;
 const int pinV2 = 6;
 const int pinV3 = 8;
 const int pinP1 = 7;
-const int redButton = 13;
 
 const int MODE_TEMP = 0;
 const int MODE_CONSUME = 1;
@@ -45,10 +41,6 @@ float temp1, temp2, temp3;
 const unsigned long TEMP_POLL_RATE = 30; //seconds
 unsigned long lastTempCheck = 30*1000;
 volatile boolean consumePlus = false;
-volatile boolean preheat = false;
-
-unsigned long preheatStart = 0;
-const unsigned long PREHEAT_TIME = 240*1000; // 240 seconds = 4 min
 
 // valve control objects
 Valve v1(pinV1, Valve::TYPE_NO);
@@ -143,11 +135,6 @@ void toggleConsumePlus()
   consumePlus = !consumePlus;
 }
 
-void togglePreheat()
-{
-  preheat = !preheat;
-}
-
 void reset()
 {
   v1.Disengage();
@@ -213,16 +200,6 @@ void transitToState(int futureState)
     p1.Enable();
   }
 
-  /**** READY -> PREHEAT ****/
-  else if (sys.GetState() == System:: READY && futureState == System::PREHEAT) {
-    Serial.println("READY -> PREHEAT");
-    reset();
-    p1.Enable();
-    v1.Engage();
-    v3.Engage();
-    preheatStart = millis();
-  }
-
   sys.SetState(futureState);
 
 }
@@ -267,22 +244,13 @@ void loop()
     lastTempCheck = millis();
   }
   int pulseRate = f1.GetPulseRate();
-
+  
   // read the button state
   int buttonState = digitalRead(disp);
-  int redButtonState = digitalRead(redButton);
   if (buttonState == HIGH)
   {
     //display();
     toggleConsumePlus();
-  }
-
-  /*** PREHEAT LOGIC ***/
-  // when red button is pressed, preheat is started
-  // it lasts for 4 mins
-  if (redButtonState == HIGH)
-  {
-    togglePreheat();
   }
 
   // check if we need to reinit the LCD display
@@ -353,10 +321,6 @@ void loop()
     if (tempDiff >= PUMP_BEGIN_TOLERANCE)
     {
       transitToState(System::PUMPING);
-    }
-    else if (preheat)
-    {
-      transitToState(System::PREHEAT);
     }
     else
     {
