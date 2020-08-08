@@ -6,8 +6,8 @@
 #include <Arduino.h>
 #include "Pump.h"
 
-#define OFF HIGH
-#define ON LOW
+#define OFF LOW
+#define ON HIGH
 
 Pump::Pump(int pumpPin)
 {

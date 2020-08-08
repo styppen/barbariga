@@ -6,8 +6,8 @@
 #include <Arduino.h>
 #include "Valve.h"
 
-#define OFF HIGH
-#define ON LOW
+#define OFF LOW
+#define ON HIGH
 
 Valve::Valve(int pin, int valveType)
 {
@@ -21,13 +21,13 @@ void Valve::Init()
 {
   if (_valveType == Valve::TYPE_NC)
   {
-    _open = LOW;
-    _closed = HIGH;
+    _open = HIGH;
+    _closed = LOW;
   }
   else if (_valveType == Valve::TYPE_NO)
   {
-    _open = HIGH;
-    _closed = LOW;
+    _open = LOW;
+    _closed = HIGH;
   }
 
   // we want to init the valve default state
@@ -54,14 +54,14 @@ void Valve::Close()
 
 void Valve::Engage()
 {
-  _valveState = LOW;
+  _valveState = HIGH;
   _actionState = Valve::STATE_ACTIVE;
   digitalWrite(_valvePin, _valveState);
 }
 
 void Valve::Disengage()
 {
-  _valveState = HIGH;
+  _valveState = LOW;
   _actionState = Valve::STATE_IDLE;
   digitalWrite(_valvePin, _valveState);
 }
