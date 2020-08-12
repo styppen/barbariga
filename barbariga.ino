@@ -251,6 +251,7 @@ void loop()
   {
     //display();
     toggleConsumePlus();
+    delay(250);
   }
 
   // check if we need to reinit the LCD display
